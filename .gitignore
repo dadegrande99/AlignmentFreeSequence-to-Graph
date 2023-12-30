@@ -1,4 +1,13 @@
+# datas
 /data
+
+# python virtual environment
 /__pycache__
 /_venv
+
+# IDE settings
 /.vscode
+/.idea
+
+# secret files
+credentials.json
