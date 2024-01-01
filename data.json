@@ -1,0 +1,337 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "name": "A",
+      "label": "base"
+    },
+    {
+      "id": 2,
+      "name": "C",
+      "label": "base"
+    },
+    {
+      "id": 3,
+      "name": "C",
+      "label": "base"
+    },
+    {
+      "id": 4,
+      "name": "G",
+      "label": "base"
+    },
+    {
+      "id": 5,
+      "name": "T",
+      "label": "base"
+    },
+    {
+      "id": 6,
+      "name": "A",
+      "label": "base"
+    },
+    {
+      "id": 7,
+      "name": "C",
+      "label": "base"
+    },
+    {
+      "id": 8,
+      "name": "C",
+      "label": "base"
+    },
+    {
+      "id": 9,
+      "name": "T",
+      "label": "base"
+    },
+    {
+      "id": 10,
+      "name": "T",
+      "label": "base"
+    },
+    {
+      "id": 11,
+      "name": "C",
+      "label": "base"
+    },
+    {
+      "id": 12,
+      "name": "T",
+      "label": "base"
+    }
+  ],
+
+  "relations": [
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 1
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 2
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 2
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 3
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 3
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 4
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 4
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 8
+        }
+      },
+      "label": "green"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 8
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 8
+        }
+      },
+      "label": "pink"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 1
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 9
+        }
+      },
+      "label": "pink"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 9
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "label": "pink"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 1
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 11
+        }
+      },
+      "label": "pink"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 12
+        }
+      },
+      "label": "pink"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 12
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "label": "pink"
+    }
+  ]
+}
