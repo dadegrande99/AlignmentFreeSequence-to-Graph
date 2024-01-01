@@ -1,1 +1,3 @@
 py2neo
+networkx
+matplotlib
