@@ -11,3 +11,6 @@
 
 # secret files
 credentials.json
+
+# test
+/test
