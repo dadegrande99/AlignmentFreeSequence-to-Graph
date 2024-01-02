@@ -1,5 +1,6 @@
 import json
-import os
+import networkx as nx
+import matplotlib.pyplot as plt
 from py2neo import Graph
 
 
@@ -28,10 +29,16 @@ class DBManager:
             elif isinstance(configuration, str):
                 with open(configuration) as f:
                     data = json.load(f)
-                self.location = data["uri"]
-                self.db_name = data["db_name"]
-                self.username = data["user"]
-                self.password = data["password"]
+                if "neo4j" in data:
+                    data = data["neo4j"]
+                if "uri" in data:
+                    self.location = data["uri"]
+                if "db_name" in data:
+                    self.db_name = data["db_name"]
+                if "user" in data:
+                    self.username = data["user"]
+                if "password" in data:
+                    self.password = data["password"]
 
         if location is not None:
             self.location = location
@@ -49,6 +56,16 @@ class DBManager:
 
         self.graph = Graph(self.location + "/" + self.db_name,
                            auth=(self.username, self.password))
+
+    def upload_from_json(self, file_path: str):
+        with open(file_path) as f:
+            data = json.load(f)
+
+        for node in data["nodes"]:
+            self.node_upload(node)
+
+        for relation in data["relations"]:
+            self.relation_dict_upload(relation)
 
     def node_upload(self, node: dict, label: str = None):
         if label is None:
@@ -106,3 +123,29 @@ class DBManager:
 
     def delete_all(self):
         self.graph.delete_all()
+
+    def get_networkx_di_graph(self):
+        query = """
+        MATCH (n)-[r]->(m)
+        RETURN n, r, m
+        """
+        result = self.query(query)
+
+        graph_nx = nx.DiGraph()
+
+        for record in result:
+            node1 = record["n"]
+            node2 = record["m"]
+            relationship = record["r"]
+
+            graph_nx.add_node(node1["id"], name=node1["name"])
+            graph_nx.add_node(node2["id"], name=node2["name"])
+
+            if graph_nx.has_edge(node1["id"], node2["id"]):
+                graph_nx[node1["id"]][node2["id"]]["label"] += "+" + \
+                    (type(relationship).__name__)
+            else:
+                graph_nx.add_edge(node1["id"], node2["id"],
+                                  label=type(relationship).__name__)
+
+        return graph_nx
