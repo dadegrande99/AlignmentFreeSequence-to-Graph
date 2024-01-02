@@ -168,6 +168,143 @@
       },
       "label": "green"
     },
+
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 1
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 2
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 2
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 3
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 3
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 4
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 4
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 6
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "label": "blue"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 7
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 8
+        }
+      },
+      "label": "blue"
+    },
+
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 1
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "label": "red"
+    },
+    {
+      "from": {
+        "label": "base",
+        "properties": {
+          "id": 10
+        }
+      },
+      "to": {
+        "label": "base",
+        "properties": {
+          "id": 5
+        }
+      },
+      "label": "red"
+    },
     {
       "from": {
         "label": "base",
@@ -257,21 +394,6 @@
         }
       },
       "label": "pink"
-    },
-    {
-      "from": {
-        "label": "base",
-        "properties": {
-          "id": 1
-        }
-      },
-      "to": {
-        "label": "base",
-        "properties": {
-          "id": 10
-        }
-      },
-      "label": "red"
     },
     {
       "from": {
@@ -292,7 +414,7 @@
       "from": {
         "label": "base",
         "properties": {
-          "id": 10
+          "id": 11
         }
       },
       "to": {
@@ -301,7 +423,7 @@
           "id": 5
         }
       },
-      "label": "red"
+      "label": "pink"
     },
     {
       "from": {
@@ -318,6 +440,7 @@
       },
       "label": "pink"
     },
+
     {
       "from": {
         "label": "base",
