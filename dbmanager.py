@@ -57,6 +57,16 @@ class DBManager:
         self.graph = Graph(self.location + "/" + self.db_name,
                            auth=(self.username, self.password))
 
+    def is_acyclic(self):
+        query = """
+        OPTIONAL MATCH path = (startNode)-[*]->(startNode)
+        WITH COLLECT(path) AS paths
+        RETURN REDUCE(acc = false, p IN paths | acc OR length(p) > 1) AS isCyclic
+        """
+        result = self.query(query)
+
+        return not result[0]["isCyclic"]
+
     def check_connection(self):
         try:
             self.graph.run("RETURN 1")
