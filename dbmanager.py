@@ -57,6 +57,14 @@ class DBManager:
         self.graph = Graph(self.location + "/" + self.db_name,
                            auth=(self.username, self.password))
 
+    def check_connection(self):
+        try:
+            self.graph.run("RETURN 1")
+            return True
+        except Exception as e:
+            print(f"Connection error: {e}")
+            return False
+
     def upload_from_json(self, file_path: str):
         with open(file_path) as f:
             data = json.load(f)
