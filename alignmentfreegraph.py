@@ -71,10 +71,41 @@ class AlignmenmtFreeGraph(DBManager):
         chunks = [sequence[i:i+self.k]
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
         save = {}
+
         for i, chuck in enumerate(chunks):
             for el in self.hashtable:
                 for triple in self.hashtable[el]:
                     if chuck == triple:
                         if (i*self.k+(int(i == 0))) not in save:
                             save[i*self.k+(int(i == 0))] = el
+
+        return tuple(save.values())
+
+    def sequence_from_graph(self, sequence: str = None, k: int = None):
+        if sequence is None:
+            raise ValueError("sequence must be not None")
+        if k is not None and k != self.k:
+            self.compute_hashtable(k)
+        if len(sequence) < self.k:
+            return None
+
+        chunks = [sequence[i:i+self.k]
+                  for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
+        save = {}
+
+        for i, chuck in enumerate(chunks):
+            query = f"MATCH (a0:base {{ name:\"{chuck[0]}\"}})"
+            for j in range(1, self.k):
+                query += f"-[r{j}]->(a{j}:base {{ name:\"{chuck[j]}\"}})"
+            query += f"\nWHERE "
+            for j in range(1, self.k-1):
+                query += f"type(r{j})=type(r{j+1}) AND "
+            query = query[:-5]
+            query += f"\nRETURN toInteger(a0.id) as ID"
+
+            res = self.graph.run(query)
+            for r in res:
+                if (i*self.k+(int(i == 0))) not in save:
+                    save[i*self.k+(int(i == 0))] = r["ID"]
+
         return tuple(save.values())
