@@ -12,5 +12,8 @@
 # secret files
 credentials.json
 
+# MacOS Trash
+.DS_Store
+
 # test
 /test

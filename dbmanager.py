@@ -57,15 +57,45 @@ class DBManager:
         self.graph = Graph(self.location + "/" + self.db_name,
                            auth=(self.username, self.password))
 
-    def upload_from_json(self, file_path: str):
+        conn = self.check_connection()
+        if not conn:
+            raise ConnectionError("Connection failed")
+        return True
+
+    def is_acyclic(self):
+        query = """
+        OPTIONAL MATCH path = (startNode)-[*]->(startNode)
+        WITH COLLECT(path) AS paths
+        RETURN REDUCE(acc = false, p IN paths | acc OR length(p) > 1) AS isCyclic
+        """
+        result = self.query(query)
+
+        return not result[0]["isCyclic"]
+
+    def check_connection(self):
+        try:
+            self.graph.run("RETURN 1")
+            return True
+        except Exception as e:
+            print(f"Connection error: {e}")
+            return False
+
+    def upload_from_json(self, file_path: str, direction: int = 1):
         with open(file_path) as f:
             data = json.load(f)
 
-        for node in data["nodes"]:
-            self.node_upload(node)
+        if "nodes" in data:
+            for node in data["nodes"]:
+                self.node_upload(node)
+            del data["nodes"]
 
-        for relation in data["relations"]:
-            self.relation_dict_upload(relation)
+        if "relations" in data:
+            for relation in data["relations"]:
+                self.relation_dict_upload(relation, direction=direction)
+            del data["relations"]
+
+        for node in data:
+            self.node_upload(node)
 
     def node_upload(self, node: dict, label: str = None):
         if label is None:
@@ -87,20 +117,28 @@ class DBManager:
         for node in nodes:
             self.node_upload(node, label)
 
-    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None):
+    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1):
         if label is None:
             label = "RELATION"
+
+        if direction == 1:
+            direction = ("-", "->")
+        elif direction == -1:
+            direction = ("<-", "-")
+        else:
+            raise ValueError("Direction incorrect")
 
         query = "MATCH (a:" + from_label + "), (b:" + to_label + ") WHERE "
         for key, value in from_prop.items():
             query += "a." + str(key) + " = '" + str(value) + "' AND "
         for key, value in to_prop.items():
             query += "b." + str(key) + " = '" + str(value) + "' AND "
-        query = query[:-5] + " CREATE (a)-[:" + label + "]->(b)"
+        query = query[:-5] + " CREATE (a)" + direction[0] + \
+            "[:" + label + "]" + direction[1] + "(b)"
 
         self.graph.run(query)
 
-    def relation_dict_upload(self, relation: dict, label: str = None):
+    def relation_dict_upload(self, relation: dict, label: str = None, direction: int = 1):
         if relation is None:
             raise ValueError("Relation not specified")
 
@@ -112,17 +150,39 @@ class DBManager:
                 label = "RELATION"
 
         self.relation_upload(relation["from"]["label"], relation["from"]["properties"],
-                             relation["to"]["label"], relation["to"]["properties"], label)
+                             relation["to"]["label"], relation["to"]["properties"], label, direction)
 
-    def relations_upload(self, relations: list, label: str = None):
+    def relations_upload(self, relations: list, label: str = None, direction: int = 1):
         for relation in relations:
-            self.relation_dict_upload(relation, label)
+            self.relation_dict_upload(relation, label, direction)
 
     def query(self, query: str):
         return self.graph.run(query).data()
 
     def delete_all(self):
         self.graph.delete_all()
+
+    def get_all_nodes(self, label: str = None, limit: int = None, order: bool = None):
+        query = "MATCH (n"
+        if label is not None:
+            query += ":" + label
+        query += ")\nRETURN n"
+        if order is not None:
+            query += "\nORDER BY ID(n)"
+            if not order:
+                query += " DESC"
+        if limit is not None:
+            query += "\n LIMIT " + str(limit)
+        return self.query(query)
+
+    def get_all_relationships(self, label: str = None, limit: int = None):
+        query = "MATCH (n)-[r]"
+        if label is not None:
+            query += ":" + label
+        query += "]-(m) RETURN r"
+        if limit is not None:
+            query += " LIMIT " + str(limit)
+        return self.query(query)
 
     def get_networkx_di_graph(self):
         query = """
