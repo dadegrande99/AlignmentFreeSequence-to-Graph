@@ -60,7 +60,6 @@ class DBManager:
         conn = self.check_connection()
         if not conn:
             raise ConnectionError("Connection failed")
-
         return True
 
     def is_acyclic(self):
@@ -162,6 +161,28 @@ class DBManager:
 
     def delete_all(self):
         self.graph.delete_all()
+
+    def get_all_nodes(self, label: str = None, limit: int = None, order: bool = None):
+        query = "MATCH (n"
+        if label is not None:
+            query += ":" + label
+        query += ")\nRETURN n"
+        if order is not None:
+            query += "\nORDER BY ID(n)"
+            if not order:
+                query += " DESC"
+        if limit is not None:
+            query += "\n LIMIT " + str(limit)
+        return self.query(query)
+
+    def get_all_relationships(self, label: str = None, limit: int = None):
+        query = "MATCH (n)-[r]"
+        if label is not None:
+            query += ":" + label
+        query += "]-(m) RETURN r"
+        if limit is not None:
+            query += " LIMIT " + str(limit)
+        return self.query(query)
 
     def get_networkx_di_graph(self):
         query = """
