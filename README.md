@@ -41,14 +41,27 @@ pip install -r requirements.txt
 
 ## Usage
 
-To use the project, first, create an instance of the `DBManager` class with the necessary parameters for connecting to your Neo4j database. Then, create an instance of the `AlignmentFreeGraph` class, passing the `DBManager` instance and the desired k parameter.
+To use the project, you create an instance of the `DBManager` class with the necessary parameters for connecting to your Neo4j database.
+
+```python
+from dbmanager import DBManager
+
+db_manager = DBManager(location='your_database_location', db_name='your_database_name', username='your_username', password='your_password')
+
+# otherwise
+db_manager = DBManager(configuration='your_secret_credentials.json')
+```
+
+or, you can utilize the functionalities of Alignment-Free Sequence to Graph with an instance of the `AlignmentFreeGraph` class in this way 
 
 ```python
 from dbmanager import DBManager
 from alignmentfreegraph import AlignmentFreeGraph
 
-db_manager = DBManager(location='your_database_location', db_name='your_database_name', username='your_username', password='your_password')
-alignment_free_graph = AlignmentFreeGraph(db_manager=db_manager, k=3)
+alignment_free_graph = AlignmentFreeGraph(location='your_database_location', db_name='your_database_name', username='your_username', password='your_password', k=3)
+
+# otherwise
+alignment_free_graph = AlignmentFreeGraph(configuration='your_secret_credentials.json', k=3)
 ```
 
 ## Contributors
