@@ -52,7 +52,7 @@ db_manager = DBManager(location='your_database_location', db_name='your_database
 db_manager = DBManager(configuration='your_secret_credentials.json')
 ```
 
-or, you can utilize the functionalities of Alignment-Free Sequence to Graph with an instance of the `AlignmentFreeGraph` class in this way 
+Or, you can utilize the functionalities of Alignment-Free Sequence to Graph with an instance of the `AlignmentFreeGraph` class in this way
 
 ```python
 from dbmanager import DBManager
