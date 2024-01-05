@@ -2,8 +2,35 @@ from dbmanager import DBManager
 
 
 class AlignmenmtFreeGraph(DBManager):
+
+    """
+    Alignment-Free Sequence to Graph class
+
+    This class extends the DBManager class with the aim implements the Alignment-Free Sequence to Graph logic.
+    To do this, it work only with Direct Acyclic Graph (DAG) and it uses a k-mer based approach, where k is a parameter that can be set by the user.
+    """
+
     def __init__(self, location: str = None, db_name: str = None, username: str = None,
                  password: str = None, configuration: [dict, str] = None, k: int = 3):
+        """
+        Alignment-Free Sequence to Graph constructor
+
+        This constructor initialize the Alignment-Free Sequence to Graph class with the given parameters.
+        It also initialize the hashtable attribute, that is a dictionary that contains the k-mers of the graph.
+        The keys of the dictionary are the nodes of the graph, while the values are the k-mers of the graph.
+        The k-mers are represented as a dictionary, where the keys are the k-mers and the values are the colors of the k-mers.
+        The colors of the k-mers are represented as a list of strings, where each string is the type of the edge that connect the k-mer to the next k-mer.
+
+        :param location: The location of the database, default is None (trype: str)
+        :param db_name: The name of the database, default is None (type: str)
+        :param username: The username of the database, default is None (type: str)
+        :param password: The password of the database, default is None (type: str)
+        :param configuration: The configuration of the database, default is None (type: dict or str)
+        :param k: The k parameter, default is 3 (type: int)
+
+        :raises ValueError: If k is less than 1
+        """
+
         super().__init__(location, db_name, username, password, configuration)
         if k < 1:
             raise ValueError("k must be greater than 1")
@@ -11,6 +38,15 @@ class AlignmenmtFreeGraph(DBManager):
         self.compute_hashtable()
 
     def connect(self, location: str = None, db_name: str = None, username: str = None, password: str = None, configuration: [dict, str] = None):
+        """
+        Connect to the database
+
+        This method connect to the database with the given parameters.
+        It also check if the graph is acyclic, if it is not, it raise a ValueError.
+
+        :return: True if the connection is successful
+        """
+
         if super().connect(location, db_name, username, password, configuration):
             if self.is_acyclic():
                 return True
@@ -18,6 +54,10 @@ class AlignmenmtFreeGraph(DBManager):
                 raise ValueError("Graph must be acyclic")
 
     def initialize_hashtable(self):
+        """
+        Initialize of the hash-table
+        """
+
         res = self.get_all_nodes()
         ids = []
         for r in res:
@@ -26,6 +66,19 @@ class AlignmenmtFreeGraph(DBManager):
         self.hashtable = {ids[i]: {} for i in range(len(ids))}
 
     def compute_hashtable(self, k: int = None):
+        """
+        This method compute the hash-table of the graph.
+
+        Every time that this method is called, the hash-table is re-initialize and re-computed.
+        If the K parameter is valid and it is different from the current K parameter, the K attribute is update and the hash-table is re-computed with the new K parameter.
+
+        :param k: The k parameter, default is None (type: int)
+
+        :raises ValueError: If k is less than 1
+
+        :return: The hash-table of the graph
+        """
+
         self.initialize_hashtable()
 
         if k is not None:
@@ -34,18 +87,24 @@ class AlignmenmtFreeGraph(DBManager):
             self.k = k
 
         query = "MATCH (a0)"
+
         for i in range(1, self.k):
             query += f"-[r{i}]->(a{i})"
+
         if self.k > 2:
             query += f"\nWHERE"
             for i in range(1, self.k-1):
                 query += f" type(r{i})=type(r{i+1}) AND "
             query = query[:-5]
+
         query += f"\nRETURN toInteger(a0.id) as ID, "
+
         for i in range(self.k):
             query += f"a{i}.name + "
         query = query[:-3]
+
         query += " as KMers"
+
         if self.k > 2:
             query += ", type(r1) as Color"
         else:
@@ -61,6 +120,19 @@ class AlignmenmtFreeGraph(DBManager):
         return self.hashtable
 
     def sequence_from_hash(self, sequence: str = None, k: int = None):
+        """
+        This method compute the sequence from the hash-table of the graph.
+
+        This function divide the sequence in k-mers and then it search the k-mers in the hash-table.
+
+        :param sequence: The sequence to compute, default is None (type: str)
+        :param k: The k parameter, default is None (type: int)
+
+        :raises ValueError: If sequence is None
+
+        :return: The vertex in the graph that represent the sequence if the sequence is in the graph (type: tuple)
+        """
+
         if sequence is None:
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
@@ -82,6 +154,19 @@ class AlignmenmtFreeGraph(DBManager):
         return tuple(save.values())
 
     def sequence_from_graph(self, sequence: str = None, k: int = None):
+        """
+        This method compute the sequence from the graph.
+
+        This function divide the sequence in k-mers and then it search the k-mers in the graph.
+
+        :param sequence: The sequence to compute, default is None (type: str)
+        :param k: The k parameter, default is None (type: int)
+
+        :raises ValueError: If sequence is None
+
+        :return: The vertex in the graph that represent the sequence if the sequence is in the graph (type: tuple)
+        """
+
         if sequence is None:
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
