@@ -1,7 +1,7 @@
 from dbmanager import DBManager
 
 
-class AlignmenmtFreeGraph(DBManager):
+class AlignmentFreeGraph(DBManager):
 
     """
     Alignment-Free Sequence to Graph class
