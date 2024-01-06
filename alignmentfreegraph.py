@@ -119,6 +119,12 @@ class AlignmentFreeGraph(DBManager):
 
         return self.hashtable
 
+    def get_k(self):
+        return self.k
+
+    def get_hashtable(self):
+        return self.hashtable
+
     def sequence_from_hash(self, sequence: str = None, k: int = None):
         """
         This method compute the sequence from the hash-table of the graph.
