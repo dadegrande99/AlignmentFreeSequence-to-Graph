@@ -105,13 +105,20 @@ class AlignmentFreeGraph(DBManager):
 
         query += " as KMers"
 
-        if self.k > 2:
+        if self.k > 1:
             query += ", type(r1) as Color"
+            res = self.graph.run(query)
+            for r in res:
+                if r["KMers"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["KMers"]] = []
+                self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
         else:
-            query += ", \"\" as Color"
+            res = self.graph.run(query)
+            for r in res:
+                if r["KMers"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["KMers"]] = []
 
         res = self.graph.run(query)
-
         for r in res:
             if r["KMers"] not in self.hashtable[r["ID"]]:
                 self.hashtable[r["ID"]][r["KMers"]] = []
