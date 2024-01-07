@@ -125,6 +125,22 @@ class AlignmentFreeGraph(DBManager):
     def get_hashtable(self):
         return self.hashtable
 
+    def set_k(self, k: int):
+        """
+        This method set the K parameter of the graph.
+        When the K parameter is set, the hash-table is re-computed.
+
+        :param k: The k parameter (type: int)
+
+        :raises ValueError: If k is None or if k is less than 1
+        """
+        if k is None:
+            raise ValueError("k must be not None")
+        if k < 1:
+            raise ValueError("k must be greater than 1")
+        self.k = k
+        self.compute_hashtable()
+
     def sequence_from_hash(self, sequence: str = None, k: int = None):
         """
         This method compute the sequence from the hash-table of the graph.
