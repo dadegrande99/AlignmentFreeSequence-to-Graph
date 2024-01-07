@@ -1,18 +1,31 @@
 import customtkinter as ctk
 import os
-from tkinter import filedialog
+import tkinter as tk
+from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
+import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 from alignmentfreegraph import AlignmentFreeGraph
+
+plt.rcParams['figure.figsize'] = [16, 9]
+plt.rcParams['figure.dpi'] = 80
 
 # Variables
 afg = None
 selected_file = None
+hash_table = None
 
 # Functions
 
 
-def do_nothing():
+def do_new_nothing():
     pass
+
+
+def close_new_window():
+    new_window.destroy()
 
 
 def select_config_file():
@@ -73,9 +86,39 @@ def login():
         new_connection(error=e)
 
 
+def plot_graph(graph: nx.DiGraph):
+    fig = Figure(figsize=(10, 6), dpi=50)
+    ax = fig.add_subplot(111)
+
+    pos = nx.spring_layout(graph)
+
+    nx.draw_networkx_nodes(graph, pos, node_size=1000,
+                           node_color="skyblue", node_shape="o", alpha=0.8, ax=ax)
+    nx.draw_networkx_labels(graph, pos, labels=nx.get_node_attributes(
+        graph, "name"), font_weight="bold", font_size=14, font_color="black", font_family="arial", ax=ax)
+    node_labels = {node: f"\n\n\n{node}" for node in graph.nodes}
+    nx.draw_networkx_labels(
+        graph, pos, labels=node_labels, font_color='black', ax=ax)
+    for edge in graph.edges:
+        rad = -0.2
+        for color in graph.edges[edge]["label"].split("+"):
+            nx.draw_networkx_edges(graph, pos, edgelist=[
+                                   edge], connectionstyle=f"arc3,rad={rad}", arrows=True, arrowsize=20, width=2, edge_color=color, ax=ax)
+            if rad < 0:
+                rad *= -1
+            else:
+                rad += 0.2
+                rad *= -1
+
+    fig.tight_layout()
+    ax.set_axis_off()
+    canvas = FigureCanvasTkAgg(fig, master=graph_frame)  # A tk.DrawingArea.
+    canvas.draw()
+    canvas.get_tk_widget().pack(side="left")
+
+
 def new_connection(message: str = "Create a conection", error: str = None):
-    def close_window():
-        new_window.destroy()
+
     global new_window
     new_window = ctk.CTkToplevel(master=root)
     new_window.title("New Connection")
@@ -86,9 +129,9 @@ def new_connection(message: str = "Create a conection", error: str = None):
         new_window.grab_set()
         # change the background color back to white when the new window is closed
         new_window.bind('<Destroy>', lambda e: root.config(bg=root_bg_color))
-        new_window.protocol("WM_DELETE_WINDOW", do_nothing)
+        new_window.protocol("WM_DELETE_WINDOW", do_new_nothing)
     else:
-        new_window.protocol("WM_DELETE_WINDOW", close_window)
+        new_window.protocol("WM_DELETE_WINDOW", close_new_window)
 
     message_label = ctk.CTkLabel(
         master=new_window, text=message, font=("Roboto", 16))
@@ -156,7 +199,74 @@ def new_connection(message: str = "Create a conection", error: str = None):
     login_button.pack(pady=30)
 
 
+def show_hashtable():
+    global afg
+
+    # Create a treeview for the hashtable
+    for widget in hash_table_frame.winfo_children():
+        widget.destroy()
+    tree = ttk.Treeview(
+        hash_table_frame, selectmode='browse', show='headings')
+
+    # Assuming hashtable is a dictionary
+    hashtable = afg.get_hashtable()  # Replace with your method to get the hashtable
+
+    # Create the columns
+    tree["columns"] = ("Key", "Value")
+    tree.column("#0", width=0, stretch=ctk.NO)
+    tree.column("Key", anchor="w", width=30)
+    tree.column("Value", anchor="w")
+
+    # Create the headings
+    tree.heading("#0", text="", anchor=ctk.W)
+    tree.heading("Key", text="Key", anchor=ctk.W)
+    tree.heading("Value", text="Value", anchor=ctk.W)
+
+    # Add the data from the hashtable
+    for key, value in hashtable.items():
+        if value == {}:
+            tree.insert(parent='', index='end', values=(key, "-"))
+        else:
+            for k in value:
+                tree.insert(parent='', index='end',
+                            values=(key, f"{k}: {value[k]}"))
+                key = ""
+
+    tree.pack()
+
+
+def change_k(event):
+    global afg
+    global k_value_entry
+    k = k_value_entry.get()
+    if feasible_k():
+        k = int(k)
+        if k != afg.get_k():
+            afg.set_k(k)
+            show_hashtable()
+            k_value_problem_label.configure(text="")
+    k_value_entry.delete(0, tk.END)
+    k_value_entry.insert(0, str(afg.get_k()))
+    k_value_problem_label.configure(
+        text=k + " not feasible")
+
+
+def feasible_k():
+    # controll k value is a number
+    global k_value_entry
+    k = k_value_entry.get()
+    if is_int(k):
+        k = int(k)
+        if k > 1:
+            return True
+    return False
+
+
+def is_int(string: str):
+    return string.isdigit()
+
 # Creating interface
+
 
 # interface style
 ctk.set_appearance_mode("dark")
@@ -171,28 +281,54 @@ root_bg_color = root.cget("bg")
 
 root.title("Alignment-Free Sequence to Graph")
 
+open_window_button = ctk.CTkButton(
+    master=root, text="New Connection", command=new_connection)
+open_window_button.pack(anchor="ne", pady=5, padx=10)
 # frame of the interface
 frame = ctk.CTkFrame(master=root)
 frame.pack(pady=10, padx=15, fill="both", expand=True)
-open_window_button = ctk.CTkButton(
-    master=frame, text="New Connection", command=new_connection)
-open_window_button.pack(anchor="ne", pady=5, padx=10)
 # Project title
 title = ctk.CTkLabel(
     master=frame, text="Alignment-Free Sequence to Graph", font=("Roboto", 24))
 title.pack(pady=5, padx=10)
 
-if is_file_in_current_directory("credentials.json"):
+if afg is None and is_file_in_current_directory("credentials.json"):
     try:
         afg = AlignmentFreeGraph(configuration="credentials.json")
     except Exception as e:
         new_connection(error=e)
 
+graph_frame = ctk.CTkFrame(master=frame)
+graph_frame.pack(pady=10, padx=15, anchor="n", expand=True)
+
+plot_graph(afg.get_networkx_di_graph())
+
+k_value_frame = ctk.CTkFrame(master=graph_frame)
+k_value_label = ctk.CTkLabel(master=k_value_frame, text="k = ")
+k_value_entry = ctk.CTkEntry(master=k_value_frame, width=45)
+k_value_entry.insert(0, str(afg.get_k()))
+k_value_frame.pack(anchor="n", pady=10, padx=5, expand=True)
+k_value_label.pack(side="left", anchor="n", pady=10, padx=5)
+k_value_entry.pack(side="left", anchor="n", pady=10, padx=3)
+k_value_entry.bind("<Return>", change_k)
+k_value_problem_label = ctk.CTkLabel(
+    master=k_value_frame, text="", text_color="red")
+k_value_problem_label.pack(side="left", pady=0, padx=1, expand=True)
+
+hash_table_frame = ctk.CTkFrame(master=graph_frame)
+hash_table_frame.pack(side="right", pady=10, padx=15, expand=True)
+
+
+show_hashtable()
+
+show_hashtable_button = ctk.CTkButton(
+    master=frame, text="Show Hashtable", command=show_hashtable, fg_color="#24a0ed", hover_color="#1183ca")
+show_hashtable_button.pack(anchor="n", pady=20, padx=10)
 
 # Create a button that will close the interface when clicked
 
 exit_button = ctk.CTkButton(
-    master=frame, text="Exit", command=root.destroy, fg_color="#df2c14", hover_color="#c61a09")
+    master=root, text="Exit", command=root.destroy, fg_color="#df2c14", hover_color="#c61a09")
 exit_button.pack(side='bottom', pady=5, padx=10)
 
 
