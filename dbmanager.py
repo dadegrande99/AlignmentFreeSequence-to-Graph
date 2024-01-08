@@ -419,3 +419,34 @@ class DBManager:
                                   label=type(relationship).__name__)
 
         return graph_nx
+
+    def export_database_to_cypher(self, file_path: str = 'cypher_queries.txt'):
+        # Get all nodes and relationships
+        nodes = self.get_all_nodes()
+        relationships = self.get_all_relationships()
+
+        # Initialize list of Cypher queries
+        cypher_queries = []
+
+        # Convert nodes to Cypher queries
+        for node in nodes:
+            query = f"CREATE (n:{list(node['n'].labels)[0]} "
+            if len(node['n'].items()) > 1:
+                query += "{"
+                for key, value in node['n'].items():
+                    if key != 'label':
+                        query += f"{key}: '{value}', "
+                    query = query[:-2] + "}"
+            query += ")"
+            cypher_queries.append(query)
+        cypher_queries
+
+        # Convert relationships to Cypher queries
+        for relationship in relationships:
+            query = f"MATCH (a:{relationship['r']['start']['label']}),(b:{relationship['r']['end']['label']}) WHERE a.id = {relationship['r']['start']['id']} AND b.id = {relationship['r']['end']['id']} CREATE (a)-[r:{relationship['r']['label']}]->(b);"
+            cypher_queries.append(query)
+
+        # Write Cypher queries to text file
+        with open(file_path, 'w') as file:
+            for query in cypher_queries:
+                file.write(query + '\n')
