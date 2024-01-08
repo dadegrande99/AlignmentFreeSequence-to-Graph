@@ -223,3 +223,29 @@ class AlignmentFreeGraph(DBManager):
                     save[i*self.k+(int(i == 0))] = r["ID"]
 
         return tuple(save.values())
+
+    def upload_from_json(self, file_path: str, direction: int = 1):
+        super().upload_from_json(file_path, direction)
+        self.compute_hashtable()
+
+    def delete_all(self):
+        super().delete_all()
+        self.compute_hashtable()
+
+    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1):
+        super().relation_upload(from_label, from_prop, to_label, to_prop, label, direction)
+        if self.is_acyclic():
+            self.compute_hashtable()
+        else:
+            super().reletion_remove(from_label, from_prop, to_label, to_prop, label, direction)
+
+    def max_id(self):
+        """
+        This method return the maximum id of the graph
+
+        :return: The maximum id of the graph (type: int)
+        """
+        query = "MATCH (n) RETURN max(toInteger(n.id)) as max"
+        res = self.graph.run(query)
+        for r in res:
+            return r["max"]
