@@ -126,6 +126,8 @@ python interface.py
 
 Docker is a platform that allows you to automate the deployment, scaling, and management of applications using containerization. In this project, we provide a Dockerfile and a docker-compose.yml file that you can use to build a Docker image of the application and run it as a Docker container.
 
+- *There are some problems with running the interface, you should run the interface without docker*
+
 Here are the steps to use this project with Docker:
 
 1. **Build the Docker image**
@@ -161,7 +163,6 @@ Here are the steps to use this project with Docker:
    This command starts all the services defined in the `docker-compose.yml` file.
 
 Please note that you need to have Docker and Docker Compose installed on your system to use these features. You can install Docker from the [official website](https://docs.docker.com/get-docker/) and Docker Compose from the [official documentation](https://docs.docker.com/compose/install/).
-```
 
 This section provides a brief introduction to Docker and Docker Compose, and explains how to build a Docker image of the application, run it as a Docker container, and use Docker Compose to manage the application and its services.
 
