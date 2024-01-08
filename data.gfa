@@ -1,0 +1,38 @@
+S 1 A
+S 2 C
+S 3 C
+S 4 G
+S 5 T
+S 6 A
+S 7 C
+S 8 C
+S 9 T
+S 10 T
+S 11 C
+S 12 T
+L 1 + 2 + CO:Z:green
+L 2 + 3 + CO:Z:green
+L 3 + 4 + CO:Z:green
+L 4 + 5 + CO:Z:green
+L 5 + 6 + CO:Z:green
+L 6 + 7 + CO:Z:green
+L 7 + 8 + CO:Z:green
+L 1 + 2 + CO:Z:blue
+L 2 + 3 + CO:Z:blue
+L 3 + 4 + CO:Z:blue
+L 4 + 5 + CO:Z:blue
+L 5 + 6 + CO:Z:blue
+L 6 + 7 + CO:Z:blue
+L 7 + 8 + CO:Z:blue
+L 1 + 10 + CO:Z:red
+L 10 + 5 + CO:Z:red
+L 5 + 6 + CO:Z:red
+L 6 + 7 + CO:Z:red
+L 7 + 8 + CO:Z:red
+L 7 + 8 + CO:Z:pink
+L 1 + 9 + CO:Z:pink
+L 9 + 10 + CO:Z:pink
+L 10 + 11 + CO:Z:pink
+L 11 + 5 + CO:Z:pink
+L 5 + 12 + CO:Z:pink
+L 12 + 7 + CO:Z:pink
