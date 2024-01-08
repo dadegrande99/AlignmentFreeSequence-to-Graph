@@ -2,4 +2,3 @@ py2neo
 networkx
 matplotlib
 customtkinter
-PIL
