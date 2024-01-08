@@ -1,7 +1,7 @@
 from dbmanager import DBManager
 
 
-class AlignmenmtFreeGraph(DBManager):
+class AlignmentFreeGraph(DBManager):
 
     """
     Alignment-Free Sequence to Graph class
@@ -83,7 +83,7 @@ class AlignmenmtFreeGraph(DBManager):
 
         if k is not None:
             if k < 1:
-                raise ValueError("k must be greater than 1")
+                raise ValueError("k must be greater than 0")
             self.k = k
 
         query = "MATCH (a0)"
@@ -105,19 +105,42 @@ class AlignmenmtFreeGraph(DBManager):
 
         query += " as KMers"
 
-        if self.k > 2:
+        if self.k > 1:
             query += ", type(r1) as Color"
+            res = self.graph.run(query)
+            for r in res:
+                if r["KMers"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["KMers"]] = []
+                self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
         else:
-            query += ", \"\" as Color"
-
-        res = self.graph.run(query)
-
-        for r in res:
-            if r["KMers"] not in self.hashtable[r["ID"]]:
-                self.hashtable[r["ID"]][r["KMers"]] = []
-            self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
+            res = self.graph.run(query)
+            for r in res:
+                if r["KMers"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["KMers"]] = []
 
         return self.hashtable
+
+    def get_k(self):
+        return self.k
+
+    def get_hashtable(self):
+        return self.hashtable
+
+    def set_k(self, k: int):
+        """
+        This method set the K parameter of the graph.
+        When the K parameter is set, the hash-table is re-computed.
+
+        :param k: The k parameter (type: int)
+
+        :raises ValueError: If k is None or if k is less than 1
+        """
+        if k is None:
+            raise ValueError("k must be not None")
+        if k < 1:
+            raise ValueError("k must be greater than 1")
+        self.k = k
+        self.compute_hashtable()
 
     def sequence_from_hash(self, sequence: str = None, k: int = None):
         """
@@ -137,8 +160,11 @@ class AlignmenmtFreeGraph(DBManager):
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
             self.compute_hashtable(k)
+
+        sequence = sequence.upper()
+        sequence = sequence.replace(" ", "")
         if len(sequence) < self.k:
-            return None
+            return ()
 
         chunks = [sequence[i:i+self.k]
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
@@ -171,8 +197,11 @@ class AlignmenmtFreeGraph(DBManager):
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
             self.compute_hashtable(k)
+
+        sequence = sequence.upper()
+        sequence = sequence.replace(" ", "")
         if len(sequence) < self.k:
-            return None
+            return ()
 
         chunks = [sequence[i:i+self.k]
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
@@ -194,3 +223,29 @@ class AlignmenmtFreeGraph(DBManager):
                     save[i*self.k+(int(i == 0))] = r["ID"]
 
         return tuple(save.values())
+
+    def upload_from_json(self, file_path: str, direction: int = 1):
+        super().upload_from_json(file_path, direction)
+        self.compute_hashtable()
+
+    def delete_all(self):
+        super().delete_all()
+        self.compute_hashtable()
+
+    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1):
+        super().relation_upload(from_label, from_prop, to_label, to_prop, label, direction)
+        if self.is_acyclic():
+            self.compute_hashtable()
+        else:
+            super().reletion_remove(from_label, from_prop, to_label, to_prop, label, direction)
+
+    def max_id(self):
+        """
+        This method return the maximum id of the graph
+
+        :return: The maximum id of the graph (type: int)
+        """
+        query = "MATCH (n) RETURN max(toInteger(n.id)) as max"
+        res = self.graph.run(query)
+        for r in res:
+            return r["max"]
