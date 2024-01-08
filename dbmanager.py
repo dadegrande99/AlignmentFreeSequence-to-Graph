@@ -271,6 +271,28 @@ class DBManager:
 
         self.graph.run(query)
 
+    def reletion_remove(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1):
+
+        if label is None:
+            label = "RELATION"
+
+        if direction == 1:
+            direction = ("-", "->")
+        elif direction == -1:
+            direction = ("<-", "-")
+        else:
+            raise ValueError("Direction incorrect")
+
+        query = "MATCH (a:" + from_label + \
+            ")-[r:" + label + "]->(b:" + to_label + ") WHERE "
+        for key, value in from_prop.items():
+            query += "a." + str(key) + " = '" + str(value) + "' AND "
+        for key, value in to_prop.items():
+            query += "b." + str(key) + " = '" + str(value) + "' AND "
+        query = query[:-5] + " DELETE r"
+
+        self.graph.run(query)
+
     def relation_dict_upload(self, relation: dict, label: str = None, direction: int = 1):
         """
         This method take a relation in the formact of a dictionary and unpack it to upload it to the database using the relation_upload method.
