@@ -61,6 +61,12 @@ Finally, there is an "Exit" button at the bottom of the interface which closes t
 
 To install the project, clone the repository and install the required Python packages.
 
+```bash
+git clone https://github.com/dadegrande99/alignment-free-sequence-to-graph.git
+cd alignment-free-sequence-to-graph
+pip install -r requirements.txt
+```
+
 The installation of Neo4j for the "Alignment-Free Sequence to Graph" project can be done in two ways:
 
 1. Direct Download: You can directly download Neo4j from the official website. Here is the [link](https://neo4j.com/download-center/#community) to the download center. After downloading, follow the instructions provided by Neo4j to install it on your system.
@@ -83,12 +89,6 @@ docker run \
 In both cases, ensure that the Neo4j server is running and accessible at the specified location before trying to connect to it from the application.
 
 Please note that the exact commands and steps might vary depending on your operating system and setup. Always refer to the official documentation for the most accurate and up-to-date information.
-
-```bash
-git clone https://github.com/dadegrande99/alignment-free-sequence-to-graph.git
-cd alignment-free-sequence-to-graph
-pip install -r requirements.txt
-```
 
 ## Usage
 
@@ -113,6 +113,12 @@ alignment_free_graph = AlignmentFreeGraph(location='your_database_location', db_
 
 # otherwise
 alignment_free_graph = AlignmentFreeGraph(configuration='your_secret_credentials.json', k=3)
+```
+
+To use the interface, run the `interface.py` file.
+
+```bash
+python interface.py
 ```
 
 ## Contributors
