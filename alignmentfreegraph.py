@@ -166,8 +166,11 @@ class AlignmentFreeGraph(DBManager):
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
             self.compute_hashtable(k)
+
+        sequence = sequence.upper()
+        sequence = sequence.replace(" ", "")
         if len(sequence) < self.k:
-            return None
+            return ()
 
         chunks = [sequence[i:i+self.k]
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
@@ -200,8 +203,11 @@ class AlignmentFreeGraph(DBManager):
             raise ValueError("sequence must be not None")
         if k is not None and k != self.k:
             self.compute_hashtable(k)
+
+        sequence = sequence.upper()
+        sequence = sequence.replace(" ", "")
         if len(sequence) < self.k:
-            return None
+            return ()
 
         chunks = [sequence[i:i+self.k]
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
