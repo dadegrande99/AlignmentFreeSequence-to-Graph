@@ -228,6 +228,49 @@ class AlignmentFreeGraph(DBManager):
         super().upload_from_json(file_path, direction)
         self.compute_hashtable()
 
+    def upload_from_gfa(self, file_path: str):
+        """
+        This method uploads a graph from a GFA file.
+
+        :param file_path: Path of the file
+
+        :raises ValueError: If the file is not in the correct format
+        """
+
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+
+        for line in lines:
+            parts = line.strip().split()
+
+            if parts[0] == 'S':
+                node = {
+                    'id': parts[1],
+                    'name': parts[2],
+                    'label': 'base'
+                }
+                self.node_upload(node)
+
+            elif parts[0] == 'L':
+                relation = {
+                    'from': {
+                        'label': 'base',
+                        'properties': {
+                            'id': parts[1]
+                        }
+                    },
+                    'to': {
+                        'label': 'base',
+                        'properties': {
+                            'id': parts[3]
+                        }
+                    },
+                    'label': parts[5].split(':')[2] if len(parts) > 5 else '',
+                    'direction': 1 if parts[2] == '+' else -1
+                }
+                self.relation_dict_upload(relation)
+        self.compute_hashtable()
+
     def delete_all(self):
         super().delete_all()
         self.compute_hashtable()
