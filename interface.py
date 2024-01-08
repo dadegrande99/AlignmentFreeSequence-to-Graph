@@ -50,6 +50,12 @@ def open_file_dialog_json():
     return filename
 
 
+def open_file_dialog_json_gfa():
+    filename = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select file",
+                                          filetypes=[("json files", "*.json"), ("GFA files", "*.gfa")])
+    return filename
+
+
 def is_file_in_current_directory(filename):
     files_in_directory = os.listdir('.')
     return filename in files_in_directory
@@ -281,11 +287,14 @@ def search_sequence():
         sequence_result_label.configure(text="Result: ")
 
 
-def add_from_json():
+def add_from_file():
     global afg
-    file = open_file_dialog_json()
+    file = open_file_dialog_json_gfa()
     if file is not None:
-        afg.upload_from_json(file)
+        if file.endswith(".gfa"):
+            afg.upload_from_gfa(file)
+        elif file.endswith(".json"):
+            afg.upload_from_json(file)
         plot_graph()
         show_hashtable()
 
@@ -366,9 +375,9 @@ delete_all_button = ctk.CTkButton(
     master=option_graph_frame, text="Delete all nodes", command=delete_all_nodes, fg_color="#df2c14", hover_color="#c61a09")
 delete_all_button.pack(side="left", pady=5, padx=10)
 
-add_from_json_button = ctk.CTkButton(
-    master=option_graph_frame, text="Add from JSON", command=add_from_json, fg_color="#2ecc71", hover_color="#27ae60")
-add_from_json_button.pack(side="left", pady=5, padx=10)
+add_from_file_button = ctk.CTkButton(
+    master=option_graph_frame, text="Add from file", command=add_from_file, fg_color="#2ecc71", hover_color="#27ae60")
+add_from_file_button.pack(side="left", pady=5, padx=10)
 
 sequence_frame = ctk.CTkFrame(master=frame)
 sequence_entry_frame = ctk.CTkFrame(master=sequence_frame)
