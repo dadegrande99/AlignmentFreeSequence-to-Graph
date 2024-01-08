@@ -83,7 +83,7 @@ class AlignmentFreeGraph(DBManager):
 
         if k is not None:
             if k < 1:
-                raise ValueError("k must be greater than 1")
+                raise ValueError("k must be greater than 0")
             self.k = k
 
         query = "MATCH (a0)"
@@ -117,12 +117,6 @@ class AlignmentFreeGraph(DBManager):
             for r in res:
                 if r["KMers"] not in self.hashtable[r["ID"]]:
                     self.hashtable[r["ID"]][r["KMers"]] = []
-
-        res = self.graph.run(query)
-        for r in res:
-            if r["KMers"] not in self.hashtable[r["ID"]]:
-                self.hashtable[r["ID"]][r["KMers"]] = []
-            self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
 
         return self.hashtable
 
