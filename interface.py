@@ -56,7 +56,6 @@ def is_file_in_current_directory(filename):
 
 
 def login():
-    print("Login")
     location = location_entry.get()
     if location == "":
         location = None
@@ -73,12 +72,10 @@ def login():
     global afg
     global selected_file
 
-    print(selected_file)
     new_window.destroy()
     try:
         afg = AlignmentFreeGraph(
             location, db_name, username, password, selected_file)
-        print("Connected")
         selected_file = None
 
     except Exception as e:
@@ -237,7 +234,7 @@ def show_hashtable():
                             values=(key, f"{k}: {value[k]}"))
                 key = ""
 
-    tree.pack()
+    tree.pack(expand=True, fill="both")
 
 
 def change_k(event):
@@ -280,14 +277,27 @@ def search_sequence():
         result = afg.sequence_from_graph(sequence)
         if result is not None:
             sequence_result_label.configure(text="Result: " + str(result))
-        else:
-            sequence_result_label.configure(text="Sequence not found")
     else:
-        sequence_result_label.configure(text="Insert a sequence")
+        sequence_result_label.configure(text="Result: ")
+
+
+def add_from_json():
+    global afg
+    file = open_file_dialog_json()
+    if file is not None:
+        afg.upload_from_json(file)
+        plot_graph()
+        show_hashtable()
+
+
+def delete_all_nodes():
+    global afg
+    afg.delete_all()
+    plot_graph()
+    show_hashtable()
+
 
 # Creating interface
-
-
 # interface style
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -343,9 +353,22 @@ hash_table_frame.pack(side="right", pady=10, padx=15, expand=True)
 
 
 show_hashtable()
+
+option_graph_frame = ctk.CTkFrame(master=frame)
+option_graph_frame.pack(side="top", anchor="n", pady=10,
+                        padx=5, expand=True, after=graph_frame)
+
 refresh_graph_button = ctk.CTkButton(
-    master=frame, text="Refresh Graph", command=plot_graph, fg_color="#24a0ed", hover_color="#1183ca")
-refresh_graph_button.pack(anchor="n", pady=20, padx=10)
+    master=option_graph_frame, text="Refresh Graph", command=plot_graph, fg_color="#24a0ed", hover_color="#1183ca")
+refresh_graph_button.pack(side="left", pady=5, padx=10)
+
+delete_all_button = ctk.CTkButton(
+    master=option_graph_frame, text="Delete all nodes", command=delete_all_nodes, fg_color="#df2c14", hover_color="#c61a09")
+delete_all_button.pack(side="left", pady=5, padx=10)
+
+add_from_json_button = ctk.CTkButton(
+    master=option_graph_frame, text="Add from JSON", command=add_from_json, fg_color="#2ecc71", hover_color="#27ae60")
+add_from_json_button.pack(side="left", pady=5, padx=10)
 
 sequence_frame = ctk.CTkFrame(master=frame)
 sequence_entry_frame = ctk.CTkFrame(master=sequence_frame)
