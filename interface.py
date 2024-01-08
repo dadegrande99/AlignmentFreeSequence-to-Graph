@@ -2,7 +2,6 @@ import customtkinter as ctk
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
-from PIL import Image, ImageTk
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -86,9 +85,15 @@ def login():
         new_connection(error=e)
 
 
-def plot_graph(graph: nx.DiGraph):
+def plot_graph():
+    for widget in plot_frame.winfo_children():
+        widget.destroy()
+
     fig = Figure(figsize=(10, 6), dpi=50)
     ax = fig.add_subplot(111)
+
+    global afg
+    graph = afg.get_networkx_di_graph()
 
     pos = nx.spring_layout(graph)
 
@@ -112,9 +117,9 @@ def plot_graph(graph: nx.DiGraph):
 
     fig.tight_layout()
     ax.set_axis_off()
-    canvas = FigureCanvasTkAgg(fig, master=graph_frame)  # A tk.DrawingArea.
+    canvas = FigureCanvasTkAgg(fig, master=plot_frame)  # A tk.DrawingArea.
     canvas.draw()
-    canvas.get_tk_widget().pack(side="left")
+    canvas.get_tk_widget().pack(side="left", anchor="n", pady=0, padx=0)
 
 
 def new_connection(message: str = "Create a conection", error: str = None):
@@ -265,6 +270,21 @@ def feasible_k():
 def is_int(string: str):
     return string.isdigit()
 
+
+def search_sequence():
+    global afg
+    global sequence_entry
+    global sequence_result_label
+    sequence = sequence_entry.get()
+    if sequence != "":
+        result = afg.sequence_from_graph(sequence)
+        if result is not None:
+            sequence_result_label.configure(text="Result: " + str(result))
+        else:
+            sequence_result_label.configure(text="Sequence not found")
+    else:
+        sequence_result_label.configure(text="Insert a sequence")
+
 # Creating interface
 
 
@@ -301,7 +321,10 @@ if afg is None and is_file_in_current_directory("credentials.json"):
 graph_frame = ctk.CTkFrame(master=frame)
 graph_frame.pack(pady=10, padx=15, anchor="n", expand=True)
 
-plot_graph(afg.get_networkx_di_graph())
+plot_frame = ctk.CTkFrame(master=graph_frame)
+plot_frame.pack(side="left", pady=3, padx=3, expand=True)
+
+plot_graph()
 
 k_value_frame = ctk.CTkFrame(master=graph_frame)
 k_value_label = ctk.CTkLabel(master=k_value_frame, text="k = ")
@@ -320,10 +343,29 @@ hash_table_frame.pack(side="right", pady=10, padx=15, expand=True)
 
 
 show_hashtable()
+refresh_graph_button = ctk.CTkButton(
+    master=frame, text="Refresh Graph", command=plot_graph, fg_color="#24a0ed", hover_color="#1183ca")
+refresh_graph_button.pack(anchor="n", pady=20, padx=10)
 
-show_hashtable_button = ctk.CTkButton(
-    master=frame, text="Show Hashtable", command=show_hashtable, fg_color="#24a0ed", hover_color="#1183ca")
-show_hashtable_button.pack(anchor="n", pady=20, padx=10)
+sequence_frame = ctk.CTkFrame(master=frame)
+sequence_entry_frame = ctk.CTkFrame(master=sequence_frame)
+sequence_label = ctk.CTkLabel(master=sequence_entry_frame, text="Sequence")
+sequence_entry = ctk.CTkEntry(master=sequence_entry_frame)
+sequence_button = ctk.CTkButton(
+    master=sequence_frame, text="Search", command=search_sequence)
+sequence_result_frame = ctk.CTkFrame(master=sequence_frame)
+sequence_result_label = ctk.CTkLabel(
+    master=sequence_result_frame, text="Result")
+
+sequence_frame.pack(anchor="n", pady=10, padx=15, expand=True)
+sequence_entry_frame.pack(anchor="n", pady=10, padx=5, expand=True)
+sequence_label.pack(side="left", anchor="n", pady=10, padx=5)
+sequence_entry.pack(side="left", anchor="n", pady=10, padx=3)
+sequence_entry.bind("<Return>", lambda e: search_sequence())
+sequence_button.pack(anchor="n", pady=10, padx=3)
+sequence_result_frame.pack(anchor="n", pady=10, padx=5, expand=True)
+sequence_result_label.pack(side="left", anchor="n", pady=10, padx=5)
+
 
 # Create a button that will close the interface when clicked
 
