@@ -83,6 +83,7 @@ def login():
         afg = AlignmentFreeGraph(
             location, db_name, username, password, selected_file)
         selected_file = None
+        change_connection()
 
     except Exception as e:
         new_connection(error=e)
@@ -306,6 +307,16 @@ def delete_all_nodes():
     show_hashtable()
 
 
+def change_connection():
+    global afg
+    # controlla se il file scelta è nella stessa directory di interface.py, nel caso lo sia cancella il path e tieni solo il nominee
+
+    global k_value_entry
+    k_value_entry.insert(0, str(afg.get_k()))
+    plot_graph()
+    show_hashtable()
+
+
 # Creating interface
 # interface style
 ctk.set_appearance_mode("dark")
@@ -343,12 +354,14 @@ graph_frame.pack(pady=10, padx=15, anchor="n", expand=True)
 plot_frame = ctk.CTkFrame(master=graph_frame)
 plot_frame.pack(side="left", pady=3, padx=3, expand=True)
 
-plot_graph()
+if afg is not None:
+    plot_graph()
 
 k_value_frame = ctk.CTkFrame(master=graph_frame)
 k_value_label = ctk.CTkLabel(master=k_value_frame, text="k = ")
 k_value_entry = ctk.CTkEntry(master=k_value_frame, width=45)
-k_value_entry.insert(0, str(afg.get_k()))
+if afg is not None:
+    k_value_entry.insert(0, str(afg.get_k()))
 k_value_frame.pack(anchor="n", pady=10, padx=5, expand=True)
 k_value_label.pack(side="left", anchor="n", pady=10, padx=5)
 k_value_entry.pack(side="left", anchor="n", pady=10, padx=3)
@@ -360,8 +373,8 @@ k_value_problem_label.pack(side="left", pady=0, padx=1, expand=True)
 hash_table_frame = ctk.CTkFrame(master=graph_frame)
 hash_table_frame.pack(side="right", pady=10, padx=15, expand=True)
 
-
-show_hashtable()
+if afg is not None:
+    show_hashtable()
 
 option_graph_frame = ctk.CTkFrame(master=frame)
 option_graph_frame.pack(side="top", anchor="n", pady=10,
