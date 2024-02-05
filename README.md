@@ -16,7 +16,7 @@ This project is about creating an alignment-free
     - [Interface](#interface)
   - [Installation](#installation)
   - [Usage](#usage)
-    - [Usage with Docker](#usage-with-docker)
+    - [Usage of Neo4J with Docker](#usage-of-neo4j-with-docker)
   - [Contributors](#contributors)
   - [License](#license)
 
@@ -122,7 +122,9 @@ To use the interface, run the `interface.py` file.
 python interface.py
 ```
 
-### Usage with Docker
+You can update the `README.md` file with the actual usage of Docker as follows:
+
+### Usage of Neo4J with Docker
 
 Docker is a platform that allows you to automate the deployment, scaling, and management of applications using containerization. In this project, we provide a Dockerfile and a docker-compose.yml file that you can use to build a Docker image of the application and run it as a Docker container.
 
@@ -130,41 +132,44 @@ Docker is a platform that allows you to automate the deployment, scaling, and ma
 
 Here are the steps to use this project with Docker:
 
-1. **Build the Docker image**
+1. **Start the Neo4j Docker container**
 
-   You can build the Docker image using the Dockerfile provided in the project. Navigate to the project directory and run the following command:
-
-   ```bash
-   docker build -t alignment-free-sequence-to-graph .
-   ```
-
-   This command builds a Docker image using the Dockerfile in the current directory and tags it as `alignment-free-sequence-to-graph`.
-
-2. **Run the Docker container**
-
-   After building the Docker image, you can run it as a Docker container using the following command:
-
-   ```bash
-   docker run -it --rm --name alignment-free-sequence-to-graph alignment-free-sequence-to-graph
-   ```
-
-   This command runs the Docker container in interactive mode (`-it`), removes the container after it stops (`--rm`), and names the container `alignment-free-sequence-to-graph`.
-
-3. **Using Docker Compose**
-
-   Alternatively, you can use Docker Compose to manage the application and its services. Docker Compose uses the `docker-compose.yml` file to define and run multi-container Docker applications.
-
-   To start the application with Docker Compose, navigate to the project directory and run the following command:
+   You can start the Neo4j Docker container using the docker-compose.yml file provided in the project. Navigate to the project directory and run the following command:
 
    ```bash
    docker-compose up
    ```
 
-   This command starts all the services defined in the `docker-compose.yml` file.
+   This command starts the Neo4j service defined in the `docker-compose.yml` file. The Neo4j server will be accessible at `localhost:7474` and `localhost:7687`.
+
+2. **Connect to the Neo4j Docker container**
+
+   After starting the Neo4j Docker container, you can connect to it from the application. Create an instance of the `DBManager` or `AlignmentFreeGraph` class with the necessary parameters for connecting to your Neo4j database. The location should be `bolt://localhost:7687`, and the username and password should be as defined in the `docker-compose.yml` file.
+
+   ```python
+   from dbmanager import DBManager
+
+   db_manager = DBManager(location='bolt://localhost:7687', db_name='neo4j', username='neo4j', password='testtest1')
+   ```
+
+   Or, you can utilize the functionalities of Alignment-Free Sequence to Graph with an instance of the `AlignmentFreeGraph` class in this way
+
+   ```python
+   from dbmanager import DBManager
+   from alignmentfreegraph import AlignmentFreeGraph
+
+   alignment_free_graph = AlignmentFreeGraph(location='bolt://localhost:7687', db_name='neo4j', username='neo4j', password='testtest1', k=3)
+   ```
+
+   To use the interface, run the `interface.py` file.
+
+   ```bash
+   python interface.py
+   ```
 
 Please note that you need to have Docker and Docker Compose installed on your system to use these features. You can install Docker from the [official website](https://docs.docker.com/get-docker/) and Docker Compose from the [official documentation](https://docs.docker.com/compose/install/).
 
-This section provides a brief introduction to Docker and Docker Compose, and explains how to build a Docker image of the application, run it as a Docker container, and use Docker Compose to manage the application and its services.
+This section provides a brief introduction to Docker and Docker Compose, and explains how to start a Neo4j Docker container, connect to it from the application, and use the application's interface.
 
 ## Contributors
 
