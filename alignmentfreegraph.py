@@ -177,7 +177,18 @@ class AlignmentFreeGraph(DBManager):
                         if (i*self.k+(int(i == 0))) not in save:
                             save[i*self.k+(int(i == 0))] = el
 
-        return tuple(save.values())
+        if len(save) < len(chunks):
+            return ()
+
+        res = set(self.hashtable[save[1]][chunks[0]])
+        for i in range(1, len(chunks)):
+            res = res.intersection(
+                set(self.hashtable[save[i*self.k+(int(i == 0))]][chunks[i]]))
+
+        if len(res) == 0:
+            return tuple(save.values())
+        else:
+            return ()
 
     def sequence_from_graph(self, sequence: str = None, k: int = None):
         """
