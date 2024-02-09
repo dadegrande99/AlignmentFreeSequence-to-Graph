@@ -113,10 +113,18 @@ class AlignmentFreeGraph(DBManager):
                     self.hashtable[r["ID"]][r["KMers"]] = []
                 self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
         else:
+            query = """
+            MATCH (n)
+            OPTIONAL MATCH (n)-[outgoing]->()
+            OPTIONAL MATCH ()-[incoming]->(n)
+            RETURN DISTINCT toInteger(n.id) as ID, n.name AS node, 
+                collect(DISTINCT type(outgoing)) + collect(DISTINCT type(incoming)) AS relations
+            """
             res = self.graph.run(query)
             for r in res:
-                if r["KMers"] not in self.hashtable[r["ID"]]:
-                    self.hashtable[r["ID"]][r["KMers"]] = []
+                if r["node"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["node"]] = []
+                self.hashtable[r["ID"]][r["node"]] = list(set(r["relations"]))
 
         return self.hashtable
 
@@ -138,7 +146,7 @@ class AlignmentFreeGraph(DBManager):
         if k is None:
             raise ValueError("k must be not None")
         if k < 1:
-            raise ValueError("k must be greater than 1")
+            raise ValueError("k must be greater than 0")
         self.k = k
         self.compute_hashtable()
 
