@@ -30,8 +30,6 @@ def close_new_window():
 def select_config_file():
     global selected_file
     selected_file = open_file_dialog_json()
-    # controlla se il file scelta è nella stessa directory di interface.py, nel caso lo sia cancella il path e tieni solo il nominee
-
     file_label.configure(text=selected_file.split("/")[-1])
 
 
@@ -40,7 +38,6 @@ def open_file_dialog():
     global selected_file
     selected_file = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select file",
                                                filetypes=[("json files", "*.json"), ("text files", "*.txt"), ("all files", "*.*")])
-    # Do something with the filename
     return selected_file
 
 
@@ -254,10 +251,11 @@ def change_k(event):
             afg.set_k(k)
             show_hashtable()
             k_value_problem_label.configure(text="")
-    k_value_entry.delete(0, tk.END)
-    k_value_entry.insert(0, str(afg.get_k()))
-    k_value_problem_label.configure(
-        text=k + " not feasible")
+    else:
+        k_value_entry.delete(0, tk.END)
+        k_value_entry.insert(0, str(afg.get_k()))
+        k_value_problem_label.configure(
+            text=f"{k} not feasible")
 
 
 def feasible_k():
@@ -266,7 +264,7 @@ def feasible_k():
     k = k_value_entry.get()
     if is_int(k):
         k = int(k)
-        if k > 1:
+        if k > 0:
             return True
     return False
 
