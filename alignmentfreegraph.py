@@ -11,7 +11,7 @@ class AlignmentFreeGraph(DBManager):
     """
 
     def __init__(self, location: str = None, db_name: str = None, username: str = None,
-                 password: str = None, configuration: [dict, str] = None, k: int = 3):
+                 password: str = None, configuration: [dict, str] = None, k: int = 3):  # type: ignore
         """
         Alignment-Free Sequence to Graph constructor
 
@@ -37,7 +37,8 @@ class AlignmentFreeGraph(DBManager):
         self.k = k
         self.compute_hashtable()
 
-    def connect(self, location: str = None, db_name: str = None, username: str = None, password: str = None, configuration: [dict, str] = None):
+    def connect(self, location: str = None, db_name: str = None,
+                username: str = None, password: str = None, configuration: [dict, str] = None):  # type: ignore
         """
         Connect to the database
 
