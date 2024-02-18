@@ -300,3 +300,30 @@ class AlignmentFreeGraph(DBManager):
         res = self.graph.run(query)
         for r in res:
             return r["max"]
+
+    def hashtable_to_df(self):
+        """
+        This method return the hash-table of the graph as a pandas DataFrame
+
+        :return: The hash-table of the graph as a pandas DataFrame
+        """
+        import pandas as pd
+        return pd.DataFrame(self.hashtable)
+
+    def export_hashtable(self, file_path: str):
+        """
+        This method export the hash-table of the graph in a file.
+
+        :param file_path: The path of the file (type: str)
+        """
+
+        if file_path.endswith('.csv'):
+            self.hashtable_to_df().to_csv(file_path)
+
+        elif file_path.endswith('.xlsx'):
+            self.hashtable_to_df().to_excel(file_path)
+
+        else:
+            import json
+            with open(file_path, 'w') as f:
+                json.dump(self.hashtable, f, indent=4)
