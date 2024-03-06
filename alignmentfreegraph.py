@@ -11,7 +11,7 @@ class AlignmentFreeGraph(DBManager):
     """
 
     def __init__(self, location: str = None, db_name: str = None, username: str = None,
-                 password: str = None, configuration: [dict, str] = None, k: int = 3):
+                 password: str = None, configuration: [dict, str] = None, k: int = 3):  # type: ignore
         """
         Alignment-Free Sequence to Graph constructor
 
@@ -37,7 +37,8 @@ class AlignmentFreeGraph(DBManager):
         self.k = k
         self.compute_hashtable()
 
-    def connect(self, location: str = None, db_name: str = None, username: str = None, password: str = None, configuration: [dict, str] = None):
+    def connect(self, location: str = None, db_name: str = None,
+                username: str = None, password: str = None, configuration: [dict, str] = None):  # type: ignore
         """
         Connect to the database
 
@@ -126,6 +127,8 @@ class AlignmentFreeGraph(DBManager):
                     self.hashtable[r["ID"]][r["node"]] = []
                 self.hashtable[r["ID"]][r["node"]] = list(set(r["relations"]))
 
+        self.remove_duplicates()
+
         return self.hashtable
 
     def get_k(self):
@@ -185,7 +188,18 @@ class AlignmentFreeGraph(DBManager):
                         if (i*self.k+(int(i == 0))) not in save:
                             save[i*self.k+(int(i == 0))] = el
 
-        return tuple(save.values())
+        if len(save) < len(chunks):
+            return ()
+
+        res = set(self.hashtable[save[1]][chunks[0]])
+        for i in range(1, len(chunks)):
+            res = res.intersection(
+                set(self.hashtable[save[i*self.k+(int(i == 0))]][chunks[i]]))
+
+        if len(res) == 0:
+            return tuple(save.values())
+        else:
+            return ()
 
     def sequence_from_graph(self, sequence: str = None, k: int = None):
         """
@@ -300,6 +314,31 @@ class AlignmentFreeGraph(DBManager):
         res = self.graph.run(query)
         for r in res:
             return r["max"]
+
+    def remove_duplicates(self):
+        """
+        This method remove the duplicates k-mers from the hash-table
+        """
+
+        kmer_counts = {}
+        # Count each k-mer
+        for node in self.hashtable:
+            for kmer in self.hashtable[node]:
+                if kmer not in kmer_counts:
+                    kmer_counts[kmer] = 1
+                else:
+                    kmer_counts[kmer] += 1
+
+        remove_kmers = []
+        # Find colors to remove
+        for node in self.hashtable:
+            for kmer in self.hashtable[node]:
+                if kmer_counts[kmer] > 1:
+                    remove_kmers.append((node, kmer))
+
+        # Remove colors
+        for el in remove_kmers:
+            self.hashtable[el[0]].pop(el[1])
 
     def hashtable_to_df(self):
         """
