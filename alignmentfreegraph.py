@@ -114,10 +114,18 @@ class AlignmentFreeGraph(DBManager):
                     self.hashtable[r["ID"]][r["KMers"]] = []
                 self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
         else:
+            query = """
+            MATCH (n)
+            OPTIONAL MATCH (n)-[outgoing]->()
+            OPTIONAL MATCH ()-[incoming]->(n)
+            RETURN DISTINCT toInteger(n.id) as ID, n.name AS node, 
+                collect(DISTINCT type(outgoing)) + collect(DISTINCT type(incoming)) AS relations
+            """
             res = self.graph.run(query)
             for r in res:
-                if r["KMers"] not in self.hashtable[r["ID"]]:
-                    self.hashtable[r["ID"]][r["KMers"]] = []
+                if r["node"] not in self.hashtable[r["ID"]]:
+                    self.hashtable[r["ID"]][r["node"]] = []
+                self.hashtable[r["ID"]][r["node"]] = list(set(r["relations"]))
 
         self.remove_duplicates()
 
@@ -141,7 +149,7 @@ class AlignmentFreeGraph(DBManager):
         if k is None:
             raise ValueError("k must be not None")
         if k < 1:
-            raise ValueError("k must be greater than 1")
+            raise ValueError("k must be greater than 0")
         self.k = k
         self.compute_hashtable()
 
@@ -331,3 +339,30 @@ class AlignmentFreeGraph(DBManager):
         # Remove colors
         for el in remove_kmers:
             self.hashtable[el[0]].pop(el[1])
+
+    def hashtable_to_df(self):
+        """
+        This method return the hash-table of the graph as a pandas DataFrame
+
+        :return: The hash-table of the graph as a pandas DataFrame
+        """
+        import pandas as pd
+        return pd.DataFrame(self.hashtable)
+
+    def export_hashtable(self, file_path: str):
+        """
+        This method export the hash-table of the graph in a file.
+
+        :param file_path: The path of the file (type: str)
+        """
+
+        if file_path.endswith('.csv'):
+            self.hashtable_to_df().to_csv(file_path)
+
+        elif file_path.endswith('.xlsx'):
+            self.hashtable_to_df().to_excel(file_path)
+
+        else:
+            import json
+            with open(file_path, 'w') as f:
+                json.dump(self.hashtable, f, indent=4)

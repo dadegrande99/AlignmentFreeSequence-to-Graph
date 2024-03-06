@@ -15,6 +15,7 @@ plt.rcParams['figure.dpi'] = 80
 afg = None
 selected_file = None
 hash_table = None
+fig = None
 
 # Functions
 
@@ -30,8 +31,6 @@ def close_new_window():
 def select_config_file():
     global selected_file
     selected_file = open_file_dialog_json()
-    # controlla se il file scelta è nella stessa directory di interface.py, nel caso lo sia cancella il path e tieni solo il nominee
-
     file_label.configure(text=selected_file.split("/")[-1])
 
 
@@ -40,7 +39,6 @@ def open_file_dialog():
     global selected_file
     selected_file = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select file",
                                                filetypes=[("json files", "*.json"), ("text files", "*.txt"), ("all files", "*.*")])
-    # Do something with the filename
     return selected_file
 
 
@@ -54,6 +52,18 @@ def open_file_dialog_json_gfa():
     filename = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select file",
                                           filetypes=[("json files", "*.json"), ("GFA files", "*.gfa")])
     return filename
+
+
+def chose_file_image():
+    filename = filedialog.asksaveasfile(initialdir=os.getcwd(), title="Select file", defaultextension=".png", initialfile="graph.png",
+                                        filetypes=[("image files", "*.png"), ("image files", "jpeg"), ("all files", "*.*")])
+    return filename.name
+
+
+def chose_file_hahstable():
+    filename = filedialog.asksaveasfile(initialdir=os.getcwd(), title="Select file", defaultextension=".json", initialfile="hash_table.json",
+                                        filetypes=[("JSON files", "*.json"), ("Excel file", "*.xlsx"), ("CSV files", "*.csv"), ("all files", "*.*")])
+    return filename.name
 
 
 def is_file_in_current_directory(filename):
@@ -93,6 +103,7 @@ def plot_graph():
     for widget in plot_frame.winfo_children():
         widget.destroy()
 
+    global fig
     fig = Figure(figsize=(10, 6), dpi=50)
     ax = fig.add_subplot(111)
 
@@ -254,19 +265,20 @@ def change_k(event):
             afg.set_k(k)
             show_hashtable()
             k_value_problem_label.configure(text="")
-    k_value_entry.delete(0, tk.END)
-    k_value_entry.insert(0, str(afg.get_k()))
-    k_value_problem_label.configure(
-        text=k + " not feasible")
+    else:
+        k_value_entry.delete(0, tk.END)
+        k_value_entry.insert(0, str(afg.get_k()))
+        k_value_problem_label.configure(
+            text=f"{k} not feasible")
 
 
 def feasible_k():
-    # controll k value is a number
+    # controll if k value is a number
     global k_value_entry
     k = k_value_entry.get()
     if is_int(k):
         k = int(k)
-        if k > 1:
+        if k > 0:
             return True
     return False
 
@@ -309,12 +321,21 @@ def delete_all_nodes():
 
 def change_connection():
     global afg
-    # controlla se il file scelta è nella stessa directory di interface.py, nel caso lo sia cancella il path e tieni solo il nominee
-
     global k_value_entry
+
     k_value_entry.insert(0, str(afg.get_k()))
     plot_graph()
     show_hashtable()
+
+
+def export_graph():
+    global fig
+    fig.savefig(chose_file_image())
+
+
+def export_hash():
+    global afg
+    afg.export_hashtable(chose_file_hahstable())
 
 
 # Creating interface
@@ -391,6 +412,17 @@ delete_all_button.pack(side="left", pady=5, padx=10)
 add_from_file_button = ctk.CTkButton(
     master=option_graph_frame, text="Add from file", command=add_from_file, fg_color="#2ecc71", hover_color="#27ae60")
 add_from_file_button.pack(side="left", pady=5, padx=10)
+
+export_frame = ctk.CTkFrame(master=frame)
+export_frame.pack(side="top", anchor="n", pady=10, padx=15,
+                  expand=True, after=option_graph_frame)
+export_graph_button = ctk.CTkButton(master=export_frame, text="Export Graph",
+                                    command=export_graph, fg_color="#24a0ed", hover_color="#1183ca")
+export_graph_button.pack(side="left", pady=5, padx=10, expand=True)
+export_hash_button = ctk.CTkButton(master=export_frame, text="Export HashTable",
+                                   command=export_hash, fg_color="#24a0ed", hover_color="#1183ca")
+export_hash_button.pack(side="right", pady=5, padx=10, expand=True)
+
 
 sequence_frame = ctk.CTkFrame(master=frame)
 sequence_entry_frame = ctk.CTkFrame(master=sequence_frame)
