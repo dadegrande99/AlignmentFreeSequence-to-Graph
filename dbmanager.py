@@ -1,5 +1,4 @@
 import json
-import networkx as nx
 import matplotlib.pyplot as plt
 from py2neo import Graph
 
@@ -394,6 +393,7 @@ class DBManager:
 
         :return: Networkx graph
         """
+        import networkx as nx
 
         query = """
         MATCH (n)-[r]->(m)
