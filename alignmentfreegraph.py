@@ -309,35 +309,25 @@ class AlignmentFreeGraph(DBManager):
 
     def remove_duplicates(self):
         """
-        This method remove the duplicates from the hash-table of the graph.
+        This method remove the duplicates k-mers from the hash-table
         """
 
-        color_counts = {}
-        # Count each colors
+        kmer_counts = {}
+        # Count each k-mer
         for node in self.hashtable:
             for kmer in self.hashtable[node]:
-                if kmer not in color_counts:
-                    color_counts[kmer] = {}
-                for color in self.hashtable[node][kmer]:
-                    if color not in color_counts[kmer]:
-                        color_counts[kmer][color] = 0
-                    color_counts[kmer][color] += 1
+                if kmer not in kmer_counts:
+                    kmer_counts[kmer] = 1
+                else:
+                    kmer_counts[kmer] += 1
 
+        remove_kmers = []
         # Find colors to remove
-        remove_colors = []
-        remove_attributes = []
         for node in self.hashtable:
             for kmer in self.hashtable[node]:
-                for color in self.hashtable[node][kmer]:
-                    if color_counts[kmer][color] > 1:
-                        remove_colors.append((node, kmer, color))
+                if kmer_counts[kmer] > 1:
+                    remove_kmers.append((node, kmer))
 
         # Remove colors
-        for el in remove_colors:
-            self.hashtable[el[0]][el[1]].remove(el[2])
-            if len(self.hashtable[el[0]][el[1]]) == 0:
-                remove_attributes.append((el[0], el[1]))
-
-        # Remove attributes with no colors
-        for el in remove_attributes:
+        for el in remove_kmers:
             self.hashtable[el[0]].pop(el[1])
