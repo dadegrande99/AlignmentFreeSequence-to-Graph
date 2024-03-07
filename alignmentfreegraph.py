@@ -55,18 +55,6 @@ class AlignmentFreeGraph(DBManager):
             else:
                 raise ValueError("Graph must be acyclic")
 
-    def initialize_hashtable(self):
-        """
-        Initialize of the hash-table
-        """
-
-        res = self.get_all_nodes()
-        ids = []
-        for r in res:
-            ids.append(int(r["n"].get("id")))
-        ids.sort()
-        self.hashtable = {ids[i]: {} for i in range(len(ids))}
-
     def compute_hashtable(self, k: int = None):
         """
         This method compute the hash-table of the graph.
@@ -81,7 +69,7 @@ class AlignmentFreeGraph(DBManager):
         :return: The hash-table of the graph
         """
 
-        self.initialize_hashtable()
+        helper_dict = {}
 
         if k is not None:
             if k < 1:
@@ -111,9 +99,12 @@ class AlignmentFreeGraph(DBManager):
             query += ", type(r1) as Color"
             res = self.graph.run(query)
             for r in res:
-                if r["KMers"] not in self.hashtable[r["ID"]]:
-                    self.hashtable[r["ID"]][r["KMers"]] = []
-                self.hashtable[r["ID"]][r["KMers"]].append(r["Color"])
+                if r["ID"] not in helper_dict:
+                    helper_dict[r["ID"]] = {}
+                if r["KMers"] not in helper_dict[r["ID"]]:
+                    helper_dict[r["ID"]][r["KMers"]] = []
+                helper_dict[r["ID"]][r["KMers"]].append(r["Color"])
+
         else:
             query = """
             MATCH (n)
@@ -124,11 +115,35 @@ class AlignmentFreeGraph(DBManager):
             """
             res = self.graph.run(query)
             for r in res:
-                if r["node"] not in self.hashtable[r["ID"]]:
-                    self.hashtable[r["ID"]][r["node"]] = []
-                self.hashtable[r["ID"]][r["node"]] = list(set(r["relations"]))
+                if r["node"] not in helper_dict[r["ID"]]:
+                    helper_dict[r["ID"]][r["node"]] = []
+                helper_dict[r["ID"]][r["node"]] = list(set(r["relations"]))
 
-        self.remove_duplicates()
+        kmer_counts = {}
+        # Count each k-mer
+        for node in helper_dict:
+            for kmer in helper_dict[node]:
+                if kmer not in kmer_counts:
+                    kmer_counts[kmer] = 1
+                else:
+                    kmer_counts[kmer] += 1
+
+        remove_kmers = []
+        # Find colors to remove
+        for node in helper_dict:
+            for kmer in helper_dict[node]:
+                if kmer_counts[kmer] > 1:
+                    remove_kmers.append((node, kmer))
+
+        # Remove colors
+        for el in remove_kmers:
+            helper_dict[el[0]].pop(el[1])
+
+        # compute the hashtable
+        self.hashtable = {}
+        for node in helper_dict:
+            for kmer in helper_dict[node]:
+                self.hashtable[kmer] = helper_dict[node][kmer]
 
         return self.hashtable
 
