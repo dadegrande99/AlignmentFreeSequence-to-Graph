@@ -2,10 +2,12 @@ import customtkinter as ctk
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import matplotlib.colors as mcolors
 from alignmentfreegraph import AlignmentFreeGraph
 
 plt.rcParams['figure.figsize'] = [16, 9]
@@ -18,6 +20,21 @@ hash_table = None
 fig = None
 
 # Functions
+
+
+def is_valid_color(color_str):
+    try:
+        mcolors.to_rgba(color_str)
+        return True
+    except ValueError:
+        return False
+
+
+def random_color():
+    r = np.random.randint(0, 255)
+    g = np.random.randint(0, 255)
+    b = np.random.randint(0, 255)
+    return (r, g, b)
 
 
 def do_new_nothing():
@@ -119,11 +136,23 @@ def plot_graph():
     node_labels = {node: f"\n\n\n{node}" for node in graph.nodes}
     nx.draw_networkx_labels(
         graph, pos, labels=node_labels, font_color='black', ax=ax)
+    colors = {}
     for edge in graph.edges:
         rad = -0.2
         for color in graph.edges[edge]["label"].split("+"):
+            if is_valid_color(color):
+                edge_color = color
+            else:
+                if color not in colors:
+                    while True:
+                        new_color = random_color()
+                        if new_color not in colors.values():
+                            colors[color] = "#{:02x}{:02x}{:02x}".format(
+                                *new_color)
+                            break
+                edge_color = colors[color]
             nx.draw_networkx_edges(graph, pos, edgelist=[
-                                   edge], connectionstyle=f"arc3,rad={rad}", arrows=True, arrowsize=20, width=2, edge_color=color, ax=ax)
+                                   edge], connectionstyle=f"arc3,rad={rad}", arrows=True, arrowsize=20, width=2, edge_color=edge_color, ax=ax)
             if rad < 0:
                 rad *= -1
             else:
