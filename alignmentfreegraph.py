@@ -1,4 +1,5 @@
 from dbmanager import DBManager
+import pandas as pd
 
 
 class AlignmentFreeGraph(DBManager):
@@ -36,7 +37,6 @@ class AlignmentFreeGraph(DBManager):
             raise ValueError("k must be greater than 1")
         self.k = k
         self.compute_hashtable()
-        self.hashtable_df = None
 
     def connect(self, location: str = None, db_name: str = None,
                 username: str = None, password: str = None, configuration: [dict, str] = None):  # type: ignore
@@ -144,6 +144,15 @@ class AlignmentFreeGraph(DBManager):
         for node in helper_dict:
             for kmer in helper_dict[node]:
                 self.hashtable[kmer] = helper_dict[node][kmer]
+
+        # compute the dataframe
+        rows = []
+        for key, value in helper_dict.items():
+            for kmer, colors in value.items():
+                rows.append({'start': key, 'Kmer': kmer, 'colors': colors})
+
+        self.hashtable_df = pd.DataFrame(rows)
+        self.hashtable_df.sort_values(by='start', inplace=True)
 
         return self.hashtable
 
@@ -331,52 +340,12 @@ class AlignmentFreeGraph(DBManager):
         for r in res:
             return r["max"]
 
-    def remove_duplicates(self):
-        """
-        This method remove the duplicates k-mers from the hash-table
-        """
-
-        kmer_counts = {}
-        # Count each k-mer
-        for node in self.hashtable:
-            for kmer in self.hashtable[node]:
-                if kmer not in kmer_counts:
-                    kmer_counts[kmer] = 1
-                else:
-                    kmer_counts[kmer] += 1
-
-        remove_kmers = []
-        # Find colors to remove
-        for node in self.hashtable:
-            for kmer in self.hashtable[node]:
-                if kmer_counts[kmer] > 1:
-                    remove_kmers.append((node, kmer))
-
-        # Remove colors
-        for el in remove_kmers:
-            self.hashtable[el[0]].pop(el[1])
-
-    def hashtable_to_df(self):
-        """
-        This method generate the hash-table of the graph as a pandas DataFrame
-        """
-        import pandas as pd
-
-        rows = []
-        for key, value in self.hashtable.items():
-            for kmer, colors in value.items():
-                rows.append({'start': key, 'Kmer': kmer, 'colors': colors})
-
-        self.hashtable_df = pd.DataFrame(rows)
-
     def get_hashtable_df(self):
         """
         This method return the hash-table of the graph as a pandas DataFrame
 
         :return: The hash-table of the graph as a pandas DataFrame
         """
-        if self.hashtable_df is None:
-            self.hashtable_to_df()
         return self.hashtable_df
 
     def export_hashtable(self, file_path: str):
