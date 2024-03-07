@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
+import tkinter.font as tkFont
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -258,28 +259,30 @@ def show_hashtable():
         hash_table_frame, selectmode='browse', show='headings')
 
     # Assuming hashtable is a dictionary
-    hashtable = afg.get_hashtable()  # Replace with your method to get the hashtable
+    # Replace with your method to get the hashtable
+    hashtable = afg.get_hashtable_df()
 
     # Create the columns
-    tree["columns"] = ("Key", "Value")
+    columns = tuple(hashtable.columns)
+
+    tree["columns"] = columns
     tree.column("#0", width=0, stretch=ctk.NO)
-    tree.column("Key", anchor="w", width=30)
-    tree.column("Value", anchor="w")
+    for col in columns:
+        # Calculate the maximum width needed for the column content
+        max_width = max([tree.heading(col)["text"], *[str(value)
+                        for value in hashtable[col]]], key=len)
+        # Set column width to the maximum width
+        tree.column(col, width=tkFont.Font().measure(
+            max_width) + 20, anchor="w")
 
     # Create the headings
     tree.heading("#0", text="", anchor=ctk.W)
-    tree.heading("Key", text="Key", anchor=ctk.W)
-    tree.heading("Value", text="Value", anchor=ctk.W)
+    for col in columns:
+        tree.heading(col, text=col, anchor=ctk.W)
 
     # Add the data from the hashtable
-    for key, value in hashtable.items():
-        if value == {}:
-            tree.insert(parent='', index='end', values=(key, "-"))
-        else:
-            for k in value:
-                tree.insert(parent='', index='end',
-                            values=(key, f"{k}: {value[k]}"))
-                key = ""
+    for index, row in hashtable.iterrows():
+        tree.insert("", tk.END, values=tuple(row))
 
     tree.pack(expand=True, fill="both")
 
