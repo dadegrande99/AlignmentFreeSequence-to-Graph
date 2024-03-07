@@ -2,3 +2,5 @@ py2neo
 networkx
 matplotlib
 customtkinter
+numpy
+pandas
