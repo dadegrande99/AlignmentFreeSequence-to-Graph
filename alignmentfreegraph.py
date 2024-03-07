@@ -143,7 +143,7 @@ class AlignmentFreeGraph(DBManager):
         self.hashtable = {}
         for node in helper_dict:
             for kmer in helper_dict[node]:
-                self.hashtable[kmer] = helper_dict[node][kmer]
+                self.hashtable[kmer] = (node, helper_dict[node][kmer])
 
         # compute the dataframe
         rows = []
@@ -206,20 +206,16 @@ class AlignmentFreeGraph(DBManager):
                   for i in range(0, len(sequence), self.k) if len(sequence[i:i+self.k]) == self.k]
         save = {}
 
-        for i, chuck in enumerate(chunks):
-            for el in self.hashtable:
-                for triple in self.hashtable[el]:
-                    if chuck == triple:
-                        if (i*self.k+(int(i == 0))) not in save:
-                            save[i*self.k+(int(i == 0))] = el
+        for i, chunk in enumerate(chunks):
+            if chunk in self.hashtable:
+                save[i*self.k+(int(i == 0))] = self.hashtable[chunk][0]
+            else:
+                return ()
 
-        if len(save) < len(chunks):
-            return ()
-
-        res = set(self.hashtable[save[1]][chunks[0]])
+        res = set(self.hashtable[chunks[0]][1])
         for i in range(1, len(chunks)):
             res = res.intersection(
-                set(self.hashtable[save[i*self.k+(int(i == 0))]][chunks[i]]))
+                set(self.hashtable[chunks[i]][1]))
 
         if len(res) == 0:
             return tuple(save.values())
