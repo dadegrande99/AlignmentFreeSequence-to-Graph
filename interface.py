@@ -2,10 +2,13 @@ import customtkinter as ctk
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
+import tkinter.font as tkFont
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import matplotlib.colors as mcolors
 from alignmentfreegraph import AlignmentFreeGraph
 
 plt.rcParams['figure.figsize'] = [16, 9]
@@ -18,6 +21,21 @@ hash_table = None
 fig = None
 
 # Functions
+
+
+def is_valid_color(color_str):
+    try:
+        mcolors.to_rgba(color_str)
+        return True
+    except ValueError:
+        return False
+
+
+def random_color():
+    r = np.random.randint(0, 255)
+    g = np.random.randint(0, 255)
+    b = np.random.randint(0, 255)
+    return (r, g, b)
 
 
 def do_new_nothing():
@@ -119,11 +137,23 @@ def plot_graph():
     node_labels = {node: f"\n\n\n{node}" for node in graph.nodes}
     nx.draw_networkx_labels(
         graph, pos, labels=node_labels, font_color='black', ax=ax)
+    colors = {}
     for edge in graph.edges:
         rad = -0.2
         for color in graph.edges[edge]["label"].split("+"):
+            if is_valid_color(color):
+                edge_color = color
+            else:
+                if color not in colors:
+                    while True:
+                        new_color = random_color()
+                        if new_color not in colors.values():
+                            colors[color] = "#{:02x}{:02x}{:02x}".format(
+                                *new_color)
+                            break
+                edge_color = colors[color]
             nx.draw_networkx_edges(graph, pos, edgelist=[
-                                   edge], connectionstyle=f"arc3,rad={rad}", arrows=True, arrowsize=20, width=2, edge_color=color, ax=ax)
+                                   edge], connectionstyle=f"arc3,rad={rad}", arrows=True, arrowsize=20, width=2, edge_color=edge_color, ax=ax)
             if rad < 0:
                 rad *= -1
             else:
@@ -229,28 +259,30 @@ def show_hashtable():
         hash_table_frame, selectmode='browse', show='headings')
 
     # Assuming hashtable is a dictionary
-    hashtable = afg.get_hashtable()  # Replace with your method to get the hashtable
+    # Replace with your method to get the hashtable
+    hashtable = afg.get_hashtable_df()
 
     # Create the columns
-    tree["columns"] = ("Key", "Value")
+    columns = tuple(hashtable.columns)
+
+    tree["columns"] = columns
     tree.column("#0", width=0, stretch=ctk.NO)
-    tree.column("Key", anchor="w", width=30)
-    tree.column("Value", anchor="w")
+    for col in columns:
+        # Calculate the maximum width needed for the column content
+        max_width = max([tree.heading(col)["text"], *[str(value)
+                        for value in hashtable[col]]], key=len)
+        # Set column width to the maximum width
+        tree.column(col, width=tkFont.Font().measure(
+            max_width) + 20, anchor="w")
 
     # Create the headings
     tree.heading("#0", text="", anchor=ctk.W)
-    tree.heading("Key", text="Key", anchor=ctk.W)
-    tree.heading("Value", text="Value", anchor=ctk.W)
+    for col in columns:
+        tree.heading(col, text=col, anchor=ctk.W)
 
     # Add the data from the hashtable
-    for key, value in hashtable.items():
-        if value == {}:
-            tree.insert(parent='', index='end', values=(key, "-"))
-        else:
-            for k in value:
-                tree.insert(parent='', index='end',
-                            values=(key, f"{k}: {value[k]}"))
-                key = ""
+    for index, row in hashtable.iterrows():
+        tree.insert("", tk.END, values=tuple(row))
 
     tree.pack(expand=True, fill="both")
 
