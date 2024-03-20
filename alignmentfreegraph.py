@@ -1,6 +1,7 @@
 from dbmanager import DBManager
 import pandas as pd
 import gfapy
+import re
 
 
 class AlignmentFreeGraph(DBManager):
@@ -328,17 +329,10 @@ class AlignmentFreeGraph(DBManager):
                         for i in range(len(nodes[num]) - 1, -1, -1):
                             trail.append(nodes[num][i][1])
                 for i in range(len(trail) - 1):
-                    self.relation_upload({
-                        'label': 'base',
-                        'properties': {
-                            'id': trail[i]
-                        }
-                    }, {
-                        'label': 'base',
-                        'properties': {
-                            'id': trail[i+1]
-                        }
-                    }, label=path.name)
+                    from_prop = {"id": trail[i]}
+                    to_prop = {"id": trail[i+1]}
+                    self.relation_upload(
+                        from_label="base", from_prop=from_prop, to_label="base", to_prop=to_prop, label=re.sub(r'[|:-]', '', path.name))
 
         self.compute_hashtable()
 
