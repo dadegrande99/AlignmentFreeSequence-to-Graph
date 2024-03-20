@@ -1,5 +1,7 @@
 from dbmanager import DBManager
 import pandas as pd
+import gfapy
+import re
 
 
 class AlignmentFreeGraph(DBManager):
@@ -152,7 +154,8 @@ class AlignmentFreeGraph(DBManager):
                 rows.append({'start': key, 'Kmer': kmer, 'colors': colors})
 
         self.hashtable_df = pd.DataFrame(rows)
-        self.hashtable_df.sort_values(by='start', inplace=True)
+        if len(self.hashtable_df) > 0:
+            self.hashtable_df.sort_values(by='start', inplace=True)
 
         return self.hashtable
 
@@ -280,38 +283,57 @@ class AlignmentFreeGraph(DBManager):
         :raises ValueError: If the file is not in the correct format
         """
 
-        with open(file_path, 'r') as f:
-            lines = f.readlines()
+        self.gfa = gfapy.Gfa.from_file
+        self.gfa = self.gfa(file_path)
 
-        for line in lines:
-            parts = line.strip().split()
-
-            if parts[0] == 'S':
-                node = {
-                    'id': parts[1],
-                    'name': parts[2],
+        nodes = {}
+        i = len(self.gfa.segments) + 1
+        for line in self.gfa.segments:
+            seq_id = int(line.name)
+            if seq_id not in nodes:
+                nodes[seq_id] = []
+            j = 0
+            for s in line.sequence:
+                node_id = seq_id
+                if j > 0:
+                    node_id = i
+                    i += 1
+                j += 1
+                # save node
+                nodes[seq_id].append((s, node_id))
+                # upload node
+                self.node_upload({
+                    'id': node_id,
+                    'name': s,
                     'label': 'base'
-                }
-                self.node_upload(node)
+                })
 
-            elif parts[0] == 'L':
-                relation = {
-                    'from': {
-                        'label': 'base',
-                        'properties': {
-                            'id': parts[1]
-                        }
-                    },
-                    'to': {
-                        'label': 'base',
-                        'properties': {
-                            'id': parts[3]
-                        }
-                    },
-                    'label': parts[5].split(':')[2] if len(parts) > 5 else '',
-                    'direction': 1 if parts[2] == '+' else -1
-                }
-                self.relation_dict_upload(relation)
+        if self.gfa.paths:
+            for path in self.gfa.paths:
+                trail = []
+                for seg in path.segment_names:
+                    num = ""
+                    direction = ""
+                    for chr in str(seg):
+                        if chr.isdigit():
+                            num += chr
+                        else:
+                            direction = chr
+                    num = int(num)
+                    if direction not in ["+", "-"]:
+                        raise ValueError("wrong direction")
+                    elif direction == "+":
+                        for el in nodes[num]:
+                            trail.append(el[1])
+                    else:
+                        for i in range(len(nodes[num]) - 1, -1, -1):
+                            trail.append(nodes[num][i][1])
+                for i in range(len(trail) - 1):
+                    from_prop = {"id": trail[i]}
+                    to_prop = {"id": trail[i+1]}
+                    self.relation_upload(
+                        from_label="base", from_prop=from_prop, to_label="base", to_prop=to_prop, label=re.sub(r'[|:-]', '', path.name))
+
         self.compute_hashtable()
 
     def delete_all(self):

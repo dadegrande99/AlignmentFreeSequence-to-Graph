@@ -4,3 +4,4 @@ matplotlib
 customtkinter
 numpy
 pandas
+gfapy
