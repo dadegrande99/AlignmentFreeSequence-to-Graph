@@ -309,7 +309,11 @@ class AlignmentFreeGraph(DBManager):
                 })
 
         if self.gfa.paths:
+            n_paths = len(self.gfa.paths)
+            pt = 0
             for path in self.gfa.paths:
+                print()
+                pt += 1
                 trail = []
                 for seg in path.segment_names:
                     num = ""
@@ -328,11 +332,26 @@ class AlignmentFreeGraph(DBManager):
                     else:
                         for i in range(len(nodes[num]) - 1, -1, -1):
                             trail.append(nodes[num][i][1])
-                for i in range(len(trail) - 1):
+                perc = 0
+                len_trail = len(trail)
+
+                for i in range(len_trail - 1):
+                    if i % 4 == 0:
+                        up_char = "|"
+                    elif i % 4 == 1:
+                        up_char = "/"
+                    elif i % 4 == 2:
+                        up_char = "-"
+                    else:
+                        up_char = "\\"
+                    if (i / (len_trail / 100)) > perc:
+                        perc += 1
+                    print(
+                        f"\rPath {pt}/{n_paths} ({len_trail} relations) {up_char} {perc}%", end="")
                     from_prop = {"id": trail[i]}
                     to_prop = {"id": trail[i+1]}
                     self.relation_upload(
-                        from_label="base", from_prop=from_prop, to_label="base", to_prop=to_prop, label=re.sub(r'[|:-]', '', path.name))
+                        from_label="base", from_prop=from_prop, to_label="base", to_prop=to_prop, label=re.sub(r'[|:-]', '', path.name), update=False)
 
         self.compute_hashtable()
 
@@ -340,12 +359,12 @@ class AlignmentFreeGraph(DBManager):
         super().delete_all()
         self.compute_hashtable()
 
-    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1):
+    def relation_upload(self, from_label: str, from_prop: dict, to_label: str, to_prop: dict, label: str = None, direction: int = 1, update: bool = True):
         super().relation_upload(from_label, from_prop, to_label, to_prop, label, direction)
-        if self.is_acyclic():
-            self.compute_hashtable()
-        else:
+        if not (self.is_acyclic()):
             super().reletion_remove(from_label, from_prop, to_label, to_prop, label, direction)
+        if update:
+            self.compute_hashtable()
 
     def max_id(self):
         """
