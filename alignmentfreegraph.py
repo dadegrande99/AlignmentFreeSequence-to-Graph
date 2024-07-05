@@ -14,7 +14,7 @@ class AlignmentFreeGraph(DBManager):
     """
 
     def __init__(self, location: str = None, db_name: str = None, username: str = None,
-                 password: str = None, configuration: [dict, str] = None, k: int = 3):  # type: ignore
+                 password: str = None, configuration: [dict, str] = None, k: int = 3, check_acycle: bool = False):  # type: ignore
         """
         Alignment-Free Sequence to Graph constructor
 
@@ -33,7 +33,7 @@ class AlignmentFreeGraph(DBManager):
 
         :raises ValueError: If k is less than 1
         """
-
+        self.check_acycle = check_acycle
         super().__init__(location, db_name, username, password, configuration)
         if k < 1:
             raise ValueError("k must be greater than 1")
@@ -50,12 +50,12 @@ class AlignmentFreeGraph(DBManager):
 
         :return: True if the connection is successful
         """
-
         if super().connect(location, db_name, username, password, configuration):
-            if self.is_acyclic():
-                return True
-            else:
-                raise ValueError("Graph must be acyclic")
+            if self.check_acycle:
+                if self.is_acyclic():
+                    return True
+                else:
+                    raise ValueError("Graph must be acyclic")
 
     def compute_hashtable(self, k: int = None):
         """
