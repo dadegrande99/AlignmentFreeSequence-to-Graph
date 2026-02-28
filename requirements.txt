@@ -5,3 +5,5 @@ customtkinter
 numpy
 pandas
 gfapy
+streamlit
+openpyxl
